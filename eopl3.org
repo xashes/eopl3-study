@@ -1,0 +1,108 @@
+#+TITLE: Eessential of Programming Languages
+
+* 1. Inductive Sets of Data
+
+** Recursively Specified Data
+
+*** Inductive Specification
+    Top-down version for judgement or testing, the others for generating.
+
+**** Definition 1.1.1 - /top-down/ version
+     A natural number n is in S if and only if
+     1. n = 0, or
+     2. n - 3 \in S.
+        #+begin_src emacs-lisp :tangle yes
+          ;; in-S? : N -> Bool
+          ;; usage: (in-s? n) = #t if n is in S, #f otherwise
+          (defun in-S? (n)
+            (cond
+             ((zerop n) t)
+             ((< (- n 3) 0) nil)
+             (t (in-S? (- n 3)))))
+
+          (in-S? 9)
+        #+end_src
+
+        #+RESULTS:
+        : t
+
+**** Definition 1.1.2 - /bottom-up/ version
+     Define the set S to be the smallest set contained in N and satisfying the following two properties:
+     1. 0 \in S, and
+     2. if n \in S, then n + 3 \in S
+
+**** Rules of inference version
+     1. 0 \in S
+     2. n \in S / (n + 3) \in S
+
+*** Exercise 1.1 Write inductive definitions of the following sets. Write each definition in all three styles (top-down, bottom-up, and rules of inference). Using your rules, show the derivation of some sample elements of each set.
+**** 1. {3n + 2 | n ∈ N}
+***** Top-down
+      A natural number n is in S if and only if
+      1. n = 2, or
+      2. n - 3 \in S
+***** Bottom-up
+      Define the set S to be the smallest set contained in N and satisfying the following two properties:
+      1. 2 \in S, and
+      2. if n \in S, then n + 3 \in S
+***** Rules of inference
+      1. 2 \in S
+      2. n \in S / (n + 3) \in S
+**** 2. {2n + 3m + 1 | n, m ∈ N}
+***** Top-down
+      A natural number n is in S if and only if
+      1. n = 1, or
+      2. n - 2 \in S, or
+      3. n - 3 \in S
+***** Bottom-up
+      Define the set S to be the smallest set contained in N and satisfying the following two properties:
+      1. 1 \in S, and
+      2. if n \in S, then n + 2 \in S and n + 3 \in S
+***** Rules of inference
+      1. 1 \in S
+      2. n \in S / ((n + 2) \in S, (n + 3) \in S)
+**** 3. {(n, 2n + 1) | n ∈ N}
+**** 4. {(n, n2) | n ∈ N} Do not mention squaring in your rules. As a hint, remember the equation (n + 1)2 = n2 + 2n + 1.
+
+** Follow the Grammar
+   在定义操作归纳式定义的数据的过程时，过程的结构要与数据的结构相匹配。
+   - 对 grammar 中的每个 nonterminal 写一个过程。过程只负责处理 nonterminal 对应的数据。
+   - 在过程中，为 nonterminal 对应的每个 production 写一个分支。对出现在右侧的每个 nonterminal，写一个此 nonterminal 的过程的递归调用。
+
+** No Mysterious Auxiliaries
+   在定义辅助过程时，始终要明确其对所有实参值的行为，而不仅仅是初始值。
+
+* Chapter 2
+** Specifying data via Interface
+
+** Representation Strategies for Data Types
+*** The Interpreter Recipe
+    1. Look at a piece of data.
+    2. Decide what kind of data it represents.
+    3. Extract the components of the datum and do the right thing with them.
+*** A data-structure representation of environment
+    Env = (empty-env) | (extend-env Var SchemeVal Env)
+    Var = Sym
+    [[file:eopl3/env.rkt][code]]
+*** Environment Interface
+    - (empty-env) = \lceil\empty\rceil
+    - (apply-env \lceil{}f\rceil var) = f(var)
+    - (extend-env var v \lceil{}f\rceil) = \lceil{}g\rceil,
+      - where g(var_1)
+        = v, if var_1 = var
+        = f(var_1), otherwise
+*** Data Structure Representation
+    Every environment can be built by an expression in the following grammar:
+    Env-exp ::= (empty-env)
+              | (extend-env Identifier Scheme-value Env-exp)
+** Exercise
+*** Exercise 2.4
+    Consider the data type of ~stacks~ of values, with an interface consisting of the procedures empty-stack, push, pop, top, and empty-stack?. Write a specification for these operations in the style of the example above. Which operations are constructors and which are observers?
+    FIXME specification:
+    - constructors
+      - (empty-stack) = \lceil\empty\rceil
+      - (push v \lceil{}f\rceil) = \lceil{}g\rceil g_{[top]} = v, top += 1
+    - observers
+      - (empty-stack? \lceil{}f\rceil), #t if f = \lceil\empty\rceil, #f otherwise
+      - (top \lceil{}f\rceil)
+      - (pop v \lceil{}f\rceil) = \lceil{}g\rceil top -= 1
