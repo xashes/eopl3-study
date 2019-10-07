@@ -62,7 +62,29 @@
       1. 1 \in S
       2. n \in S / ((n + 2) \in S, (n + 3) \in S)
 **** 3. {(n, 2n + 1) | n ∈ N}
-**** 4. {(n, n2) | n ∈ N} Do not mention squaring in your rules. As a hint, remember the equation (n + 1)2 = n2 + 2n + 1.
+***** Top-down
+      A pair of natural numbers (n, m) is in S if and only if
+      1. n = 0 and m = 1, or
+      2. (n - 1, m - 2) \in S
+***** Bottom-up
+      Define the set S to be the smallest set contained in {n, m | n \in N, m \in N}, and satisfying the following two properties:
+      1. (0, 1) \in S, and
+      2. if (n, m) \in S, then (n + 1, m + 2) \in S
+***** Rules of inference
+      1. (0, 1) \in S
+      2. (n, m) \in S / (n + 1, m + 2) \in S
+**** 4. {(n, n^2) | n ∈ N} Do not mention squaring in your rules. As a hint, remember the equation (n + 1)^2 = n^2 + 2n + 1.
+***** Top-down
+      A pair of natural numbers (n, m) is in S if and only if
+      1. n = 0 and m = 0, or
+      2. (n - 1, m - 2n + 1) \in S
+***** Bottom-up
+      Define the set S to be the smallest set contained in {n, m | n \in N, m \in N}, and satisfying the following two properties:
+      1. (0, 0) \in S, and
+      2. if (n, m) \in S, then (n + 1, m + 2n + 1) \in S
+***** Rules of inference
+      1. (0, 0) \in S
+      2. (n, m) \in S / (n + 1, m + 2n + 1) \in S
 
 ** Follow the Grammar
    在定义操作归纳式定义的数据的过程时，过程的结构要与数据的结构相匹配。
