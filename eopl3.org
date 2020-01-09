@@ -86,6 +86,26 @@
       1. (0, 0) \in S
       2. (n, m) \in S / (n + 1, m + 2n + 1) \in S
 
+*** Exercise 1.2 What sets are defined by the following pairs of rules? Explain why.
+    1. (0, 1) ∈ S, (n, k) ∈ S / (n + 1, k + 7) ∈ S
+       {(n, 7n + 1) | n \in N}
+    2. {(n, 2^n) | n \in N}
+    3. {(n, fib(n), fib(n+1)) | n \in N}
+       where fib is defined as:
+       #+begin_src emacs-lisp
+         (defun fib (n)
+           (cond
+            ((zerop n) 0)
+            ((= n 1) 1)
+            ((> n 1)
+             (+ (fib (- n 1))
+                (fib (- n 2))))))
+         (fib 6)
+       #+end_src
+
+       #+RESULTS:
+       : 8
+
 ** Follow the Grammar
    在定义操作归纳式定义的数据的过程时，过程的结构要与数据的结构相匹配。
    - 对 grammar 中的每个 nonterminal 写一个过程。过程只负责处理 nonterminal 对应的数据。

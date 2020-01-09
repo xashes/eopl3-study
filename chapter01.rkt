@@ -72,3 +72,83 @@
   (check-true (in-n-nsqr? 4 16))
   (check-true (in-n-nsqr? 8 64))
   )
+
+;; List ::= '() | (any/c . List)
+;; usage: (list-length l)
+;; return: the length of l
+(define/contract (list-length lst)
+  (-> list? integer?)
+  (if (empty? lst)
+      0
+      (add1 (list-length (rest lst)))))
+(module+ test
+  (check-equal? (list-length '()) 0)
+  (check-equal? (list-length '(a b c)) 3)
+  )
+
+(define/contract (nth-element lst n)
+  (-> list? natural? any/c)
+  (let helper ([l lst] [i n])
+    (cond
+      [(empty? l)
+       (error 'nth-element "~a does not have ~s elements" lst (add1 n))]
+      [(zero? i) (first l)]
+      [else (helper (rest l) (sub1 i))]))
+  )
+(module+ test
+  (check-exn exn:fail? (lambda () (nth-element '() 0)))
+  (check-equal? (nth-element '(a) 0) 'a)
+  (check-equal? (nth-element '(a b c d e) 3) 'd)
+  )
+
+(define/contract (remove-first v l)
+  (-> any/c list? list?)
+  (if (empty? l)
+      null
+      (if (equal? v (first l))
+          (rest l)
+          (cons (first l)
+                (remove-first v (rest l))))))
+(module+ test
+  (check-equal? (remove-first 'a '(a b c)) '(b c))
+  (check-equal? (remove-first 'a '(a b a c)) '(b a c))
+  (check-equal? (remove-first 'a '(1 2 b c)) '(1 2 b c))
+  )
+
+;; LcExp ::= symbol?
+;;         | (lambda (symbol?) LcExp)
+;;         | (LcExp LcExp)
+;; cases
+;; exp is a symbol. return #t if and only if (eq? s exp)
+;; exp is a lambda exp. return #t if (not (eq? s (bound-var exp))) and s in (body exp)
+;; exp is a app exp. return #t if s occurs free in e1 or e2
+
+;; (define/contract (occurs-free? s exp)
+;;   (-> symbol? any/c boolean?)
+;;   (cond
+;;     [(symbol? exp) (eq? s exp)]
+;;     [(eq? (first exp) 'lambda) (and (not (eq? s (caadr exp)))
+;;                                     (occurs-free? s (caddr exp)))]
+;;     [else (or (occurs-free? s (car exp))
+;;               (occurs-free? s (cdr exp)))])
+;;   )
+
+(define/contract (occurs-free? s exp)
+  (-> symbol? any/c boolean?)
+  (match exp
+    [(? symbol? exp) (eq? s exp)]
+    [`(lambda (,var) ,body) (and (not (eq? s var))
+                                 (occurs-free? s body))]
+    [(list e1 e2) (or (occurs-free? s e1)
+                      (occurs-free? s e2))]
+    [_ #f]
+    )
+  )
+(module+ test
+  (check-equal? (occurs-free? 'x 'x) #t)
+  (check-equal? (occurs-free? 'x 'y) #f)
+  (check-equal? (occurs-free? 'x '(lambda (x) (x y))) #f)
+  (check-equal? (occurs-free? 'x '(lambda (y) (x y))) #t)
+  (check-equal? (occurs-free? 'x '((lambda (x) x) (x y))) #t)
+  (check-equal? (occurs-free? 'x '(lambda (y) (lambda (z) (x (y z))))) #t)
+  )
