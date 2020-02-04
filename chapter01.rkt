@@ -152,3 +152,83 @@
   (check-equal? (occurs-free? 'x '((lambda (x) x) (x y))) #t)
   (check-equal? (occurs-free? 'x '(lambda (y) (lambda (z) (x (y z))))) #t)
   )
+
+;; S-list ::= '()
+;;          | (S-exp . S-list)
+;; S-exp ::= Symbol
+;;         | S-list
+(define/contract (subst-sexp new old se)
+  (-> symbol? symbol? any/c any/c)
+  (if (symbol? se)
+      (if (eq? old se)
+          new
+          se)
+      (subst new old se)))
+(define/contract (subst new old slist)
+  (-> symbol? symbol? list? list?)
+  (if (empty? slist)
+      null
+      (cons (subst-sexp new old (car slist))
+            (subst new old (cdr slist)))))
+(module+ test
+  (check-equal? (subst 'a 'b '((b c) (b () d))) '((a c) (a () d)))
+  )
+;; S-list ::= ({S-exp}*)
+;; S-exp ::= Symbol | S-list
+(define/contract (subst-map new old slist)
+  (-> symbol? symbol? list? list?)
+  (map (lambda (se) ((lambda (new old se)
+                       (if (symbol? se)
+                           (if (eq? old se) new se)
+                           (subst-map new old se))
+                       ) new old se))
+       slist)
+  )
+(module+ test
+  (check-equal? (subst-map 'a 'b '((b c) (b () d))) '((a c) (a () d)))
+  )
+
+;; 1.3 Auxiliary Procedures and Context Arguments
+
+(define/contract (number-elements lst)
+  (-> list? (listof (list/c number? any/c)))
+  (let number-elements-from ([i 0]
+                             [l lst])
+    (if (null? l)
+        null
+        (cons `(,i ,(car l))
+              (number-elements-from (add1 i) (cdr l)))))
+  ;; (for/list ([i (in-range (length lst))]
+  ;;            [a (in-list lst)])
+  ;;   `(,i ,a))
+  )
+(module+ test
+  (check-equal? (number-elements '(a b)) '((0 a) (1 b)))
+  )
+
+;; 0 <= n < (vector-length v)
+(define/contract (partial-vector-sum v n)
+  (-> vector? natural? natural?)
+  (if (zero? n)
+      (vector-ref v 0)
+      (+ (vector-ref v n)
+         (partial-vector-sum v (sub1 n))))
+  )
+(module+ test
+  (check-equal? (partial-vector-sum #(1 2 3 4) 0) 1)
+  (check-equal? (partial-vector-sum #(1 2 3 4) 3) 10)
+  )
+
+(define/contract (vector-sum v)
+  (-> vector? natural?)
+  ;; (let ([n (vector-length v)])
+  ;;   (if (zero? n)
+  ;;       0
+  ;;       (partial-vector-sum v (sub1 n))))
+  (for/fold ([total 0])
+            ([i (in-vector v)])
+    (+ total i))
+  )
+(module+ test
+  (check-equal? (vector-sum #(1 2 3 4)) 10)
+  )
