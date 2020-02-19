@@ -232,3 +232,59 @@
 (module+ test
   (check-equal? (vector-sum #(1 2 3 4)) 10)
   )
+
+;; Exercises
+
+;; 1.15
+;; returns a list containing n copies of x
+(define/contract (duple n x)
+  (-> natural? any/c list?)
+  (if (zero? n)
+      null
+      (cons x
+            (duple (sub1 n) x))))
+(module+ test
+  (check-equal? (duple 2 3)
+                '(3 3))
+  (check-equal? (duple 4 '(ha ha))
+                '((ha ha) (ha ha) (ha ha) (ha ha)))
+  (check-equal? (duple 0 '(blah)) '())
+  )
+
+;; 1.16
+;; (invert lst)
+;; where lst is a list of 2-lists (lists of length two), returns a list with each 2-list reversed.
+(define/contract (invert lst)
+  (-> (listof (list/c any/c any/c))
+      (listof (list/c any/c any/c)))
+  (if (empty? lst)
+      null
+      (let-values ([(fir sec) (vector->values (list->vector (car lst)))])
+        (cons `(,sec ,fir)
+              (invert (cdr lst)))))
+  ;; (for/list ([lil (in-list lst)])
+  ;;   (let-values ([(fir sec) (vector->values (list->vector lil))])
+  ;;     (list sec fir)))
+)
+(module+ test
+  (check-equal? (invert '((a 1) (a 2) (1 b) (2 b))) '((1 a) (2 a) (b 1) (b 2)))
+  )
+
+;; 1.17
+;; (down lst)
+;; wraps parentheses around each top-level element of lst.
+(define/contract (down lst)
+  (-> list? list?)
+  ;; (if (null? lst)
+  ;;     null
+  ;;     (cons (list (car lst))
+  ;;           (down (cdr lst))))
+  (map list lst)
+  )
+(module+ test
+  (check-equal? (down '(1 2 3))
+                '((1) (2) (3)))
+  (check-equal? (down '((a) (fine) (idea)))
+                '(((a)) ((fine)) ((idea))))
+  (check-equal? (down '(a (more (complicated)) object)) '((a) ((more (complicated))) (object)))
+  )
