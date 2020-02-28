@@ -288,3 +288,124 @@
                 '(((a)) ((fine)) ((idea))))
   (check-equal? (down '(a (more (complicated)) object)) '((a) ((more (complicated))) (object)))
   )
+;; Exercise 1.18
+;; (swapper s1 s2 slist)
+;; returns a list the same as slist,
+;; but with all occurrences of s1 replaced by s2 and all occurrences of s2 replaced by s1.
+(define/contract (swapper s1 s2 slist)
+  (-> symbol? symbol? list? list?)
+  (if (null? slist)
+      null
+      (let ([lcar (car slist)]
+            [lcdr (cdr slist)])
+        (if (symbol? lcar)
+            (cond
+              [(eq? s1 lcar) (cons s2 (swapper s1 s2 lcdr))]
+              [(eq? s2 lcar) (cons s1 (swapper s1 s2 lcdr))]
+              [else (cons lcar (swapper s1 s2 lcdr))])
+            (cons (swapper s1 s2 lcar)
+                  (swapper s1 s2 lcdr)))))
+  )
+(module+ test
+  (check-equal? (swapper 'a 'd '(a b c d))
+                '(d b c a))
+  (check-equal? (swapper 'a 'd '(a d () c d))
+                '(d a () c a))
+  (check-equal? (swapper 'x 'y '((x) y (z (x))))
+                '((y) x (z (y))))
+  )
+;; Exercise1.19
+;; (list-set lst n x)
+;; returns a list like lst,except that the n-th element, using zero-based indexing, is x.
+(define/contract (list-set lst n x)
+  (-> list? natural? any/c list?)
+  (cond
+    [(null? lst) null]
+    [(zero? n) (cons x (cdr lst))]
+    [else (cons (car lst)
+                (list-set (cdr lst) (sub1 n) x))])
+  )
+(module+ test
+  (check-equal? (list-set '(a b c d) 2 '(1 2))
+                '(a b (1 2) d))
+  (check-equal? (list-ref (list-set '(a b c d) 3 '(1 5 10)) 3) '(1 5 10))
+  )
+;; Exercise 1.20
+;; (count-occurrences s slist)
+;; returns the number of occurrences of s in slist.
+(define/contract (count-occurrences s slist)
+  (-> symbol? list? natural?)
+  (if (null? slist)
+      0
+      (if (list? (car slist))
+          (+ (count-occurrences s (car slist))
+             (count-occurrences s (cdr slist)))
+          (if (eq? s (car slist))
+              (add1 (count-occurrences s (cdr slist)))
+              (count-occurrences s (cdr slist)))))
+  )
+(module+ test
+  (check-equal? (count-occurrences 'x '((f x) y (((x z) x)))) 3)
+  (check-equal? (count-occurrences 'x '((f x) y (((x z) () x)))) 3)
+  (check-equal? (count-occurrences 'w '((f x) y (((x z) x)))) 0)
+  )
+;; Exercise 1.21
+;; (product sos1 sos2)
+;; where sos1 and sos2 are each a list of symbols without repetitions, returns a list of 2-lists that represents the Cartesian product of sos1 and sos2. The 2-lists may appear in any order.
+(define/contract (product sos1 sos2)
+  (-> (listof symbol?) (listof symbol?) (listof (list/c symbol? symbol?)))
+  (if (null? sos1)
+      null
+      (append (product/symbol (car sos1) sos2)
+              (product (cdr sos1) sos2)))
+  )
+(module+ test
+  (check-equal? (product '(a b c) '(x y))
+                '((a x) (a y) (b x) (b y) (c x) (c y)))
+  )
+(define/contract (product/symbol s los)
+  (-> symbol? (listof symbol?) (listof (list/c symbol? symbol?)))
+  (if (null? los)
+      null
+      (cons (list s (car los))
+            (product/symbol s (cdr los)))
+      )
+  )
+(module+ test
+  (check-equal? (product/symbol 'x '(a b c))
+                '((x a) (x b) (x c)))
+  )
+;; Exercise 1.22
+;; (filter-in pred lst)
+;; returns the list of those elements in lst that satisfy the predicate pred.
+(define/contract (filter-in pred lst)
+  (-> procedure? list? list?)
+  (if (null? lst)
+      null
+      (if (pred (car lst))
+          (cons (car lst) (filter-in pred (cdr lst)))
+          (filter-in pred (cdr lst))))
+  )
+(module+ test
+  (check-equal? (filter-in number? '(a 2 (1 3) b 7)) '(2 7))
+  (check-equal? (filter-in symbol? '(a (b c) 17 foo)) '(a foo))
+  )
+;; Exercise 1.23
+;; (list-index pred lst)
+;; returns the 0-based position of the first element of lst that satisfies the predicate pred. If no element of lst satisfies the predicate, then list-index returns #f.
+(define/contract (list-index pred lst)
+  (-> procedure? list? (or/c natural? #f))
+  (let list-index-from ([p pred]
+                        [l lst]
+                        [n 0])
+    (if (null? l)
+        #f
+        (if (pred (car l))
+            n
+            (list-index-from p (cdr l) (add1 n)))))
+  )
+(module+ test
+  (check-equal? (list-index number? '(a 2 (1 3) b 7)) 1)
+  (check-equal? (list-index symbol? '(a (b c) 17 foo)) 0)
+  (check-equal? (list-index symbol? '(1 2 (a b) 3)) #f)
+  )
