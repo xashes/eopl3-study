@@ -409,3 +409,35 @@
   (check-equal? (list-index symbol? '(a (b c) 17 foo)) 0)
   (check-equal? (list-index symbol? '(1 2 (a b) 3)) #f)
   )
+;; Exercise 1.24
+;; (every? pred lst)
+;; returns #f if any element of lst fails to satisfy pred, and returns #t otherwise.
+(define/contract (every? pred lst)
+  (-> procedure? list? boolean?)
+  ;; (if (empty? lst)
+  ;;     #t
+  ;;     (and (pred (car lst))
+  ;;          (every? pred (cdr lst))))
+  (for/and ([a lst])
+    (pred a))
+  )
+(module+ test
+  (check-false (every? number? '(a b c 3 e)))
+  (check-true (every? number? '(1 2 3 5 4)))
+  )
+;; Exercise1.25
+;; (exists? pred lst)
+;; returns #t if any element of lst satisfies pred, and returns #f otherwise.
+(define/contract (exists? pred lst)
+  (-> procedure? list? boolean?)
+  ;; (if (empty? lst)
+  ;;     #f
+  ;;     (or (pred (car lst))
+  ;;         (exists? pred (cdr lst))))
+  (for/or ([a lst])
+    (pred a))
+  )
+(module+ test
+  (check-true (exists? number? '(a b c 3 e)))
+  (check-false (exists? number? '(a b c d e)))
+  )

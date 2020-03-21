@@ -6,11 +6,11 @@
 # Listof(SchemeVal) ::= () | (SchemeVal . Listof(SchemeVal))
 # lst - the list we are working on. It get smaller at every recursive call.
 # n - an abstract context in which we are working - be called context argument or inherited attribute
-def number_elements(lst):
-    return enumerate(lst)
+
 
 def number_elements(lst):
     return map(lambda i, v: [i, v], range(len(lst)), lst)
+
 
 def number_elements(lst):
     result = []
@@ -20,22 +20,28 @@ def number_elements(lst):
         n = n + 1
     return result
 
+
 def number_elements_from(lst, n):
     if len(lst) == 0:
         return []
     else:
         return [(n, lst[0]), number_elements_from(lst[1:], n+1)]
 
+
 def number_elements(lst):
     return number_elements_from(lst, 0)
 
+
 print(list(number_elements([1, 2, 3])))
+
 
 def product(sos1, sos2):
     return [(i, j) for i in sos1 for j in sos2]
 
+
 def filter_in(pred, lst):
     return [i for i in lst if pred(i)]
+
 
 def list_index(pred, lst):
     for i, v in enumerate(lst):
