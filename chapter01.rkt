@@ -527,3 +527,55 @@
     (check-equal? (sort/predicate > lon)
                   (sort lon >)))
   )
+
+;; Exercise 1.31
+;; Bintree ::= Int | (Symbol Bintree Bintree)
+(provide (contract-out [struct node
+                         ([content symbol?]
+                          [left bintree?]
+                          [right bintree?])]
+                       [struct leaf
+                         ([content integer?])]
+                       ))
+;; contructor
+(struct node (content left right) #:transparent)
+(struct leaf (content) #:transparent)
+
+;; predicate
+(define (bintree? v)
+  (-> any/c boolean?)
+  (or (leaf? v)
+      (node? v))
+  )
+(module+ test
+  (check-true (bintree? (leaf 1)))
+  (check-true (bintree? (node 'a (leaf 1) (leaf 6))))
+  )
+
+;; extractor
+(define/contract (content-of bt)
+  (-> bintree? (or/c symbol? integer?))
+  (if (leaf? bt)
+      (leaf-content bt)
+      (node-content bt))
+  )
+(module+ test
+  (check-equal? (content-of (leaf 2)) 2)
+  (check-equal? (content-of (node 'a (leaf 2) (leaf 6)))
+                'a)
+  )
+
+;; Exercise 1.32
+(define/contract (double-tree bt)
+  (-> bintree? bintree?)
+  (if (leaf? bt)
+      (leaf (* (content-of bt) 2))
+      (node (content-of bt)
+            (double-tree (node-left bt))
+            (double-tree (node-right bt))))
+  )
+(module+ test
+  (check-equal? (double-tree (leaf 1)) (leaf 2))
+  (check-equal? (double-tree (node 'a (leaf 2) (leaf 3)))
+                (node 'a (leaf 4) (leaf 6)))
+  )
