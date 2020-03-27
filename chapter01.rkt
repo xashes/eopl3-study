@@ -579,3 +579,65 @@
   (check-equal? (double-tree (node 'a (leaf 2) (leaf 3)))
                 (node 'a (leaf 4) (leaf 6)))
   )
+
+;; Exercise 1.33
+(define/contract (mark-leaves-with-red-depth bt)
+  (-> bintree? bintree?)
+  (let count-from ([n 0]
+                   [tree bt])
+    (if (leaf? tree)
+        (leaf n)
+        (if (eq? (content-of tree) 'red)
+            (node 'red
+                  (count-from (add1 n) (node-left tree))
+                  (count-from (add1 n) (node-right tree)))
+            (node (content-of tree)
+                  (count-from n (node-left tree))
+                  (count-from n (node-right tree))
+                  ))))
+  )
+(module+ test
+  (check-equal? (mark-leaves-with-red-depth (node 'red
+                                                  (node 'bar
+                                                        (leaf 26)
+                                                        (leaf 12))
+                                                  (node 'red
+                                                        (leaf 11)
+                                                        (node 'quux
+                                                              (leaf 117)
+                                                              (leaf 14)))))
+                (node 'red
+                  (node 'bar (leaf 1) (leaf 1))
+                  (node 'red (leaf 2)
+                        (node 'quux (leaf 2) (leaf 2))))
+                )
+  )
+
+;; Exercise 1.34
+;; Bin-Search-Tree ::= '() | (Int Bin-Search-Tree Bin-Search-Tree)
+(struct bstree (int left right) #:transparent)
+(define/contract (path n bst)
+  (-> integer? bstree? list?)
+  (if (= (bstree-int bst) n)
+      '()
+      null
+      )
+  )
+(module+ test
+  (check-equal? (path 17 (bstree 14
+                                 (bstree 7
+                                         '()
+                                         (bstree 12
+                                                 '()
+                                                 '()))
+                                 (bstree 26
+                                         (bstree 20
+                                                 (bstree 17
+                                                         '()
+                                                         '())
+                                                 '())
+                                         (bstree 31
+                                                 '()
+                                                 '()))))
+                '(right left left))
+  )
