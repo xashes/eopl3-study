@@ -641,3 +641,30 @@
                                                  '()))))
                 '(right left left))
   )
+
+;; Exercise 1.35
+(define/contract (number-leaves bt)
+  (-> bintree? bintree?)
+  bt
+  )
+(module+ test
+  (check-equal? (number-leaves
+                 (node 'foo
+                       (node 'bar
+                             (leaf 26)
+                             (leaf 12))
+                       (node 'baz
+                             (leaf 11)
+                             (node 'quux
+                                   (leaf 117)
+                                   (leaf 14)))))
+                (node 'foo
+                      (node 'bar
+                            (leaf 0)
+                            (leaf 1))
+                      (node 'baz
+                            (leaf 2)
+                            (node 'quux
+                                  (leaf 3)
+                                  (leaf 4)))))
+  )
