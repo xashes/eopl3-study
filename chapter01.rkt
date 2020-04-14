@@ -668,3 +668,19 @@
                                   (leaf 3)
                                   (leaf 4)))))
   )
+;; Exercise1.36
+;; Write aprocedure g such that number-elements from page23 could be defined as
+(define number-elements-g
+  (lambda (lst)
+    (if (null? lst)
+        '()
+        (cons/fold (list 0 (car lst)) (number-elements-g (cdr lst))))))
+
+(define/contract (cons/fold lst proc)
+  (-> (list/c integer? any/c) procedure? (listof (list/c integer? any/c)))
+  (number-elements lst)
+  )
+
+(module+ test
+  (check-equal? (number-elements-g '(a b)) '((0 a) (1 b)))
+  )
