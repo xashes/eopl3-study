@@ -3,10 +3,12 @@
 (module+ test
   (require typed/rackunit))
 
-(provide zero
-         zero?
+(provide Bignum
+         zero
+         is-zero?
          successor
-         predecessor)
+         predecessor
+         multiply)
 
 ;; n = '() when n = 0
 ;;   | (cons r q) when n = qN + r, 0 <= r < N
@@ -18,13 +20,18 @@
 (define (zero)
   null)
 
-(: zero? (-> Bignum Boolean))
-(define (zero? n)
-  (null? n))
+(: is-zero? (-> Bignum Boolean))
+(define (is-zero? n)
+  (or (null? n)
+      (andmap zero? n)))
+
+(module+ test
+  (check-true (is-zero? '(0 0 0)))
+  )
 
 (: successor (-> Bignum Bignum))
 (define (successor n)
-  (if (zero? n)
+  (if (is-zero? n)
       '(1)
       (let ((r (add1 (car n))))
         (if (= r BASE)
@@ -40,7 +47,7 @@
 
 (: predecessor (-> Bignum Bignum))
 (define (predecessor n)
-  (if (zero? n)
+  (if (is-zero? n)
       (error 'predecessor "n should be greater than zero")
       (let ((r : Natural (car n))
             (bn : Natural (sub1 BASE)))
@@ -57,4 +64,30 @@
                 '(15 7 9))
   (check-equal? (predecessor '(0 0 9))
                 '(15 15 8))
+  )
+
+(: add (-> Bignum Bignum Bignum))
+(define (add x y)
+  (if (is-zero? x)
+      y
+      (add (predecessor x)
+           (successor y))))
+(module+ test
+  (check-equal? (add '(1 2 3) '(4 5 6))
+                '(5 7 9))
+  )
+
+(: multiply (-> Bignum Bignum Bignum))
+(define (multiply x y)
+  (cond
+    ((or (is-zero? x) (is-zero? y)) (zero))
+    ((equal? x '(1)) y)
+    (else
+     (add y
+          (multiply (predecessor x) y)))
+    )
+  )
+(module+ test
+  (check-equal? (multiply '(1 2 3) '(2))
+                '(2 4 6))
   )
