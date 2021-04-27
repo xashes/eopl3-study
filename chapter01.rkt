@@ -4,6 +4,24 @@
   (require rackunit rackunit/text-ui)
   )
 
+;; Definition 1.1.1
+(define/contract (in-S? n)
+  (-> natural? boolean?)
+  (cond
+    ((zero? n) #t)
+    ((< (- n 3) 0) #f)
+    (else (in-S? (- n 3)))
+    )
+  )
+
+(module+ test
+  (check-true (in-S? 0))
+  (check-true (in-S? 3))
+  (check-true (in-S? 9))
+  (check-false (in-S? 1))
+  (check-false (in-S? 16))
+  )
+
 ;; Exercise 1.1
 ;; The solution is in eopl3.org, here is the tests
 ;; 1. {3n + 2 | n in N}
@@ -623,64 +641,64 @@
       null
       )
   )
-(module+ test
-  (check-equal? (path 17 (bstree 14
-                                 (bstree 7
-                                         '()
-                                         (bstree 12
-                                                 '()
-                                                 '()))
-                                 (bstree 26
-                                         (bstree 20
-                                                 (bstree 17
-                                                         '()
-                                                         '())
-                                                 '())
-                                         (bstree 31
-                                                 '()
-                                                 '()))))
-                '(right left left))
-  )
+;; (module+ test
+;;   (check-equal? (path 17 (bstree 14
+;;                                  (bstree 7
+;;                                          '()
+;;                                          (bstree 12
+;;                                                  '()
+;;                                                  '()))
+;;                                  (bstree 26
+;;                                          (bstree 20
+;;                                                  (bstree 17
+;;                                                          '()
+;;                                                          '())
+;;                                                  '())
+;;                                          (bstree 31
+;;                                                  '()
+;;                                                  '()))))
+;;                 '(right left left))
+;;   )
 
-;; Exercise 1.35
-(define/contract (number-leaves bt)
-  (-> bintree? bintree?)
-  bt
-  )
-(module+ test
-  (check-equal? (number-leaves
-                 (node 'foo
-                       (node 'bar
-                             (leaf 26)
-                             (leaf 12))
-                       (node 'baz
-                             (leaf 11)
-                             (node 'quux
-                                   (leaf 117)
-                                   (leaf 14)))))
-                (node 'foo
-                      (node 'bar
-                            (leaf 0)
-                            (leaf 1))
-                      (node 'baz
-                            (leaf 2)
-                            (node 'quux
-                                  (leaf 3)
-                                  (leaf 4)))))
-  )
-;; Exercise1.36
-;; Write aprocedure g such that number-elements from page23 could be defined as
-(define number-elements-g
-  (lambda (lst)
-    (if (null? lst)
-        '()
-        (cons/fold (list 0 (car lst)) (number-elements-g (cdr lst))))))
+;; ;; Exercise 1.35
+;; (define/contract (number-leaves bt)
+;;   (-> bintree? bintree?)
+;;   bt
+;;   )
+;; (module+ test
+;;   (check-equal? (number-leaves
+;;                  (node 'foo
+;;                        (node 'bar
+;;                              (leaf 26)
+;;                              (leaf 12))
+;;                        (node 'baz
+;;                              (leaf 11)
+;;                              (node 'quux
+;;                                    (leaf 117)
+;;                                    (leaf 14)))))
+;;                 (node 'foo
+;;                       (node 'bar
+;;                             (leaf 0)
+;;                             (leaf 1))
+;;                       (node 'baz
+;;                             (leaf 2)
+;;                             (node 'quux
+;;                                   (leaf 3)
+;;                                   (leaf 4)))))
+;;   )
+;; ;; Exercise1.36
+;; ;; Write aprocedure g such that number-elements from page23 could be defined as
+;; (define number-elements-g
+;;   (lambda (lst)
+;;     (if (null? lst)
+;;         '()
+;;         (cons/fold (list 0 (car lst)) (number-elements-g (cdr lst))))))
 
-(define/contract (cons/fold lst proc)
-  (-> (list/c integer? any/c) procedure? (listof (list/c integer? any/c)))
-  (number-elements lst)
-  )
+;; (define/contract (cons/fold lst proc)
+;;   (-> (list/c integer? any/c) procedure? (listof (list/c integer? any/c)))
+;;   (number-elements lst)
+;;   )
 
-(module+ test
-  (check-equal? (number-elements-g '(a b)) '((0 a) (1 b)))
-  )
+;; (module+ test
+;;   (check-equal? (number-elements-g '(a b)) '((0 a) (1 b)))
+;;   )

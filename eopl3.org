@@ -5,7 +5,9 @@
 ** Recursively Specified Data
 
 *** Inductive Specification
-    Top-down version for judgement or testing, the others for generating.
+用于指定一个集合
+举例，使用这种方法描述自然数集合 N = {0, 1, 2, ...} 的特定子集 S
+Top-down version for judgement or testing, the others for generating.
 
 **** Definition 1.1.1 - /top-down/ version
      A natural number n is in S if and only if
