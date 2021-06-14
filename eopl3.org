@@ -113,6 +113,24 @@ Top-down version for judgement or testing, the others for generating.
    - 对 grammar 中的每个 nonterminal 写一个过程。过程只负责处理 nonterminal 对应的数据。
    - 在过程中，为 nonterminal 对应的每个 production 写一个分支。对出现在右侧的每个 nonterminal，写一个此 nonterminal 的过程的递归调用。
 
+   - Nonterminal Symbols: 被定义的集合名称，这些集合有时也被称为 syntactic categories
+
+   - Terminal Symbols: characters in the external representation
+
+   - Productions: rules. Look like,
+     List-of-Int ::= ()
+     read "List-of-Int is(or can be) ()"
+     左侧是作为集合名称的非终止符
+     右侧指明构造左侧集合成员的方法，基于其它集合和休止符
+
+*** shortcuts
+- | (read "or")
+  List-of-Int ::= ()
+                | (Int . List-of-Int) |
+- Kleene star or plus
+  List-of-Int ::= ({Int}*)
+  "*" - zero or more
+  "+" - one or more
 ** No Mysterious Auxiliaries
    在定义辅助过程时，始终要明确其对所有实参值的行为，而不仅仅是初始值。
 
