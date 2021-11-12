@@ -1,3 +1,16 @@
+# 归纳式说明
+# Definition 1.1.1 A natural number n is in S if and only if
+# 1. n = 0, or
+# 2. n - 3 in S
+def is_in_S111(n: int) -> bool:
+    if n == 0:
+        return True
+    elif n < 0:
+        return False
+    else:
+        return is_in_S111(n-3)
+
+
 # number-elements : Listof(SchemeVal) -> Listof(List(Int SchemeVal))
 # usage: (number-elements lst) -> '((0 v0) (1 v1) ...)
 # Auxiliary Procedure
