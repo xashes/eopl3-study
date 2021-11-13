@@ -34,8 +34,10 @@ Top-down version for judgement or testing, the others for generating.
      2. if n \in S, then n + 3 \in S
 
 **** Rules of inference version
-     1. 0 \in S
-     2. n \in S / (n + 3) \in S
+     1. 0 \in S (axiom) (rule of inference)
+        (a rule with no hypotheses is called an axiom.)
+     2. n \in S / (n + 3) \in S (rule of inference)
+        (hypothesis or antecedent) / (conclusion or consequent)
 
 *** Exercise 1.1 Write inductive definitions of the following sets. Write each definition in all three styles (top-down, bottom-up, and rules of inference). Using your rules, show the derivation of some sample elements of each set.
 **** 1. {3n + 2 | n ∈ N}
@@ -164,7 +166,7 @@ List-of-Int
 *** Data Structure Representation
     Every environment can be built by an expression in the following grammar:
     Env-exp ::= (empty-env)
-              | (extend-env Identifier Scheme-value Env-exp)
+              | (extend-env Identifier Scheme-value Env-exp) |
 ** Exercise
 *** Exercise 2.4
     Consider the data type of ~stacks~ of values, with an interface consisting of the procedures empty-stack, push, pop, top, and empty-stack?. Write a specification for these operations in the style of the example above. Which operations are constructors and which are observers?
