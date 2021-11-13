@@ -7,11 +7,11 @@
 ;; Definition 1.1.1
 (define/contract (in-S? n)
   (-> natural? boolean?)
-  (cond
-    ((zero? n) #t)
-    ((< (- n 3) 0) #f)
-    (else (in-S? (- n 3)))
-    )
+  (if
+    (zero? n) #t
+    (if (>= (- n 3) 0)
+        (in-S? (- n 3))
+        #f))
   )
 
 (module+ test

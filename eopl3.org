@@ -123,7 +123,7 @@ Top-down version for judgement or testing, the others for generating.
      左侧是作为集合名称的非终止符
      右侧指明构造左侧集合成员的方法，基于其它集合和休止符
 
-*** shortcuts
+*** notational shortcuts
 - | (read "or")
   List-of-Int ::= ()
                 | (Int . List-of-Int) |
@@ -131,6 +131,14 @@ Top-down version for judgement or testing, the others for generating.
   List-of-Int ::= ({Int}*)
   "*" - zero or more
   "+" - one or more
+  {Int}*(c) - "separated list" notation. c is the separater.
+*** syntactic derivation
+用于判定给定数据是否为集合成员
+例如，给定 (14 . ()), 判定形式为
+List-of-Int
+=> (Int . List-of-Int)
+=> (Int . ())
+=> (14 . ())
 ** No Mysterious Auxiliaries
    在定义辅助过程时，始终要明确其对所有实参值的行为，而不仅仅是初始值。
 
