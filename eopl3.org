@@ -28,16 +28,41 @@ Top-down version for judgement or testing, the others for generating.
         #+RESULTS:
         : t
 
-**** Definition 1.1.2 - /bottom-up/ version
-     Define the set S to be the smallest set contained in N and satisfying the following two properties:
+**** Definition 1.1.2
+Define the set S to be the smallest set contained in N and satisfying the following two properties:
+***** /bottom-up/ version
      1. 0 \in S, and
      2. if n \in S, then n + 3 \in S
-
-**** Rules of inference version
+***** Rules of inference version
      1. 0 \in S (axiom) (rule of inference)
         (a rule with no hypotheses is called an axiom.)
      2. n \in S / (n + 3) \in S (rule of inference)
         (hypothesis or antecedent) / (conclusion or consequent)
+**** Definition 1.1.3 (list of integers, top-down)
+a list of integers if and only if either
+1. it is the empty list, or
+2. it is a pair whose car is an integer and whose cdr is a list of integers.
+#+begin_src racket
+#lang racket
+
+(define/contract (list-of-int? l)
+  (-> list? boolean?)
+  (if (empty? l)
+      #t
+      (and (integer? (car l))
+           (list-of-int? (cdr l)))
+      )
+  )
+(list-of-int? '(1 2 3))
+#+end_src
+
+#+RESULTS:
+: #t
+
+The tree-like picture below is called a derivation or deduction tree.
+14 \in N    () \in List-of-Int /
+3 \in N    (14 . ()) \in List-of-Int /
+(3 . (14 . ())) \in List-of-Int
 
 *** Exercise 1.1 Write inductive definitions of the following sets. Write each definition in all three styles (top-down, bottom-up, and rules of inference). Using your rules, show the derivation of some sample elements of each set.
 **** 1. {3n + 2 | n ∈ N}
