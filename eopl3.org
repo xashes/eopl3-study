@@ -135,14 +135,14 @@ The tree-like picture below is called a derivation or deduction tree.
        #+RESULTS:
        : 8
 
-** Follow the Grammar
+** 1.1.2 Defining Sets Using Grammars
    在定义操作归纳式定义的数据的过程时，过程的结构要与数据的结构相匹配。
    - 对 grammar 中的每个 nonterminal 写一个过程。过程只负责处理 nonterminal 对应的数据。
    - 在过程中，为 nonterminal 对应的每个 production 写一个分支。对出现在右侧的每个 nonterminal，写一个此 nonterminal 的过程的递归调用。
 
    - Nonterminal Symbols: 被定义的集合名称，这些集合有时也被称为 syntactic categories
 
-   - Terminal Symbols: characters in the external representation
+   - Terminal Symbols: characters in the external representation, eg. (, ) or .
 
    - Productions: rules. Look like,
      List-of-Int ::= ()
@@ -166,8 +166,254 @@ List-of-Int
 => (Int . List-of-Int)
 => (Int . ())
 => (14 . ())
-** No Mysterious Auxiliaries
+*** Definition 1.1.6 (s-list, s-exp)
+S-list ::= ()
+         | (S-exp . S-list)
+S-exp ::= Symbol | S-list
+*** Def 1.1.7 (binary tree)
+Bintree ::= Int | (Symbol Bintree Bintree)
+*** Def 1.1.8 lambda expression
+The *lambda calculus* is a simple language that is ofter used to study the theory of programming languages.
+
+LcExp ::= Identifier
+      ::= (lambda (Identifier) LcExp) # bound variable
+      ::= (LcExp LcExp)
+where an identifier is any symbol other than /lambda/.
+** 1.1.3 Induction
+*** Theorem 1.1.1 Let t be a binary tree, as defined in definition 1.1.7. Then t contains an odd number of nodes.
+The key to the proof is that the substructures of a tree t are always smaller than t itself. This pattern of proof is called *structural induction*.
+*** Proof by Structural Induction
+To prove that a proposition IH(s) is true for all structures s, prove the following:
+1. IH is true on simple structures (those without substructures)
+2. If IH is true on the substructures of s, then it is true on s itself.
+** 1.2 Deriving Recursive Programs
+*Follow the Grammar*
+
+when defining a procedure that operates on inductively defined data, the structure of the program should be patterned after the structure of the data.
+
+- write one procedure for each nonterminal in the grammar. The procedure will be responsible for handling the data corresponding to that nonterminal, *and nothing else*.
+- In each procedure, write one alternative for each production corresponding to that nonterminal. For each nonterminal that appears in the right-hand, write a recursive call to the procedure for that nonterminal.
+
+*** 1.2.1 list-length
+#+begin_src racket
+#lang racket
+;; List ::= '() | (any . List)
+(define/contract (list-length l)
+  (-> list? nonnegative-integer?)
+  (if (empty? l)
+      0
+      (+ 1 (list-length (cdr l)))
+      )
+  )
+
+(println (list-length '()))
+(println (list-length '(1 2 3)))
+(println (list-length '(1 2 3 a b c)))
+#+end_src
+
+#+RESULTS:
+: 0
+: 3
+: 6
+*** 1.2.2 nth-element
+#+begin_src racket
+#lang racket
+
+(define/contract (nth-element l n)
+  (-> list? nonnegative-integer? any/c)
+  (if (empty? l)
+      'noresult
+      (if (zero? n)
+          (car l)
+          (nth-element (cdr l) (- n 1))
+          )
+      )
+  )
+
+(displayln (nth-element '(a b c) 3))
+(displayln (nth-element '(a b c) 1))
+#+end_src
+
+#+RESULTS:
+: noresult
+: b
+*** 1.2.3 remove-first
+remove-first: List-of-Symbol x Symbol -> List-of-Symbol
+List-of-Symbol ::= '() | (Symbol . List-of-Symbol)
+#+begin_src racket
+#lang racket
+
+(define/contract (remove-first s los)
+  (-> symbol? (listof symbol?) (listof symbol?))
+  (if (empty? los)
+      null
+      (if (eq? s (car los))
+          (cdr los)
+          (cons (car los) (remove-first s (cdr los)))
+          )
+      )
+  )
+
+(displayln (remove-first 'a '(a b c)))
+(displayln (remove-first 'b '(a b c b)))
+(displayln (remove-first 'l '(a b c)))
+(displayln (remove-first 'l '()))
+#+end_src
+
+#+RESULTS:
+: (b c)
+: (a c b)
+: (a b c)
+: ()
+*** 1.2.4 occurs-free?
+#+begin_src racket
+#lang racket
+
+(module+ test
+  (require rackunit))
+
+(define/contract (occurs-free? s lcexp)
+  (-> symbol? (or/c symbol? list?) boolean?)
+  (cond ((symbol? lcexp) (eq? s lcexp))
+        ((eq? (car lcexp) 'lambda) (and (not (eq? s (caadr lcexp)))
+                                        (occurs-free? s (caddr lcexp))))
+        (else (or (occurs-free? s (car lcexp))
+                  (occurs-free? s (cadr lcexp))))
+      )
+  )
+
+(displayln (occurs-free? 'x 'x))        ;; #t
+(displayln (occurs-free? 'x 'y))        ;; #f
+(displayln (occurs-free? 'x '(lambda (x) (x y)))) ;; #f
+(displayln (occurs-free? 'x '(lambda (y) (x y)))) ;; #t
+(displayln (occurs-free? 'x '((lambda (x) x) (x y)))) ;; #t
+(displayln (occurs-free? 'x '(lambda (y) (lambda (z) (x (y z)))))) ;; #t
+
+#+end_src
+
+#+RESULTS:
+: #t
+: #f
+: #f
+: #t
+: #t
+: #t
+*** 1.2.5 subst
+Decomposite /subst/ into two procedures, one for each syntactic category.
+S-list ::= '()
+       ::= (S-exp . S-list)
+S-exp ::= Symbol | S-list
+
+#+begin_src racket
+#lang racket
+
+(define/contract (subst new old slist)
+  (-> symbol? symbol? list? list?)
+  (if (empty? slist)
+      '()
+      (cons (subst-in-sexp new old (car slist))
+            (subst new old (cdr slist)))
+      )
+  )
+
+(define/contract (subst-in-sexp new old sexp)
+  (-> symbol? symbol? (or/c symbol? list?) (or/c symbol? list?))
+  (if (symbol? sexp)
+      (if (eq? sexp old)
+          new
+          sexp)
+      (subst new old sexp)
+      )
+  )
+
+(displayln (subst 'a 'b '((b c) (b () d)))) ;;  '((a c) (a () d))
+#+end_src
+
+#+RESULTS:
+: ((a c) (a () d))
+
+** 1.3 Auxiliary Procedures and Context Arguments
+*** number-elements
+take any list (v0 v1 v2 ...) and return the list ((0 v0) (1 v1) (2 v2) ...)
+need to generalize the problem.
+The second argument is an abstraction of the /context/ in which we are working, called a *context argument* or *inherited attribute*.
+#+begin_src racket
+#lang racket
+
+(module+ test
+  (require rackunit))
+
+(define/contract (number-elements-from lst n)
+  (-> list? integer? list?)
+  (if (empty? lst)
+      '()
+      (cons `(,n ,(car lst))
+            (number-elements-from (cdr lst) (+ 1 n)))
+      )
+  )
+
+(define/contract (number-elements lst)
+  (-> list? list?)
+  (number-elements-from lst 0)
+  )
+
+(displayln (number-elements-from '(a b c) -1))
+(displayln (number-elements '(a b c)))
+#+end_src
+
+#+RESULTS:
+: ((-1 a) (0 b) (1 c))
+: ((0 a) (1 b) (2 c))
+
+*** No Mysterious Auxiliaries
    在定义辅助过程时，始终要明确其对所有实参值的行为，而不仅仅是初始值。
+*** list-sum
+#+begin_src racket
+#lang racket
+
+(define/contract (list-sum loi)
+  (-> (listof integer?) integer?)
+  (if (null? loi)
+      0
+      (+ (car loi)
+         (list-sum (cdr loi)))
+      )
+  )
+
+(displayln (list-sum '()))
+(displayln (list-sum '(-1 1 2)))
+#+end_src
+
+#+RESULTS:
+: 0
+: 2
+*** vector-sum
+#+begin_src racket
+#lang racket
+
+(define/contract (vector-sum-to-n voi n)
+  (-> (vectorof integer?) integer? integer?)
+  (if (zero? n)
+      (vector-ref voi 0)
+      (+ (vector-ref voi n)
+         (vector-sum-to-n voi (- n 1)))
+      )
+  )
+
+(define/contract (vector-sum voi)
+  (-> (vectorof integer?) integer?)
+  (let ((n (- (vector-length voi) 1)))
+    (vector-sum-to-n voi n)
+    )
+  )
+
+(displayln (vector-sum-to-n #(1 2 3) 1))
+(displayln (vector-sum #(1 2 3)))
+#+end_src
+
+#+RESULTS:
+: 3
+: 6
 
 * Chapter 2
 ** Specifying data via Interface
