@@ -402,8 +402,10 @@ The second argument is an abstraction of the /context/ in which we are working, 
 
 (define/contract (vector-sum voi)
   (-> (vectorof integer?) integer?)
-  (let ((n (- (vector-length voi) 1)))
-    (vector-sum-to-n voi n)
+  (let ((n (vector-length voi)))
+    (if (zero? n)
+        0
+        (vector-sum-to-n voi (- n 1)))
     )
   )
 
@@ -414,6 +416,150 @@ The second argument is an abstraction of the /context/ in which we are working, 
 #+RESULTS:
 : 3
 : 6
+** Exercise
+*** 1.15 (duple n x) returns a list containing n copies of x.
+#+begin_src racket
+#lang racket
+
+(define/contract (duple n x)
+  (-> nonnegative-integer? any/c list?)
+  (if (zero? n)
+      null
+      (cons x
+            (duple (- n 1) x))
+      )
+  )
+(displayln (duple 4 'ha))
+#+end_src
+
+#+RESULTS:
+: (ha ha ha ha)
+*** 1.16
+#+begin_src racket
+#lang racket
+
+(define/contract (invert lst)
+  (-> list? list?)
+  (if (empty? lst)
+      null
+      (cons (list (second (car lst)) (first (car lst)))
+            (invert (cdr lst)))
+      )
+  )
+
+(displayln (invert '((a 1) (a 2) (b 1) (b 2))))
+#+end_src
+
+#+RESULTS:
+: ((1 a) (2 a) (1 b) (2 b))
+*** 1.17
+#+begin_src racket
+#lang racket
+
+(define/contract (down lst)
+  (-> list? list?)
+  (if (null? lst)
+      null
+      (cons (list (car lst))
+            (down (cdr lst))))
+  )
+
+(displayln (down '(1 2 (3))))
+#+end_src
+
+#+RESULTS:
+: ((1) (2) ((3)))
+*** 1.18
+#+begin_src racket
+#lang racket
+
+(define/contract (swapper s1 s2 slist)
+  (-> symbol? symbol? (listof symbol?) (listof symbol?))
+  (if (null? slist)
+      null
+      (cond
+        [(eq? s1 (car slist))
+         (cons s2 (swapper s1 s2 (cdr slist)))]
+        [(eq? s2 (car slist))
+         (cons s1 (swapper s1 s2 (cdr slist)))]
+        [else (cons (car slist)
+                    (swapper s1 s2 (cdr slist)))]
+        )))
+
+(displayln (swapper 'a 'd '(a b c d)))
+#+end_src
+
+#+RESULTS:
+: (d b c a)
+*** 1.19
+#+begin_src racket
+#lang racket
+
+(define/contract (list-set lst n x)
+  (-> list? nonnegative-integer? any/c list?)
+  (cond
+    [(null? lst) '()]
+    [(zero? n) (cons x (cdr lst))]
+    [else (cons (car lst) (list-set (cdr lst) (- n 1) x))]
+    ))
+
+(displayln (list-set '(a b c d) 2 '(1 2)))
+#+end_src
+
+#+RESULTS:
+: (a b (1 2) d)
+*** 1.20
+#+begin_src racket
+#lang racket
+
+(define/contract (count-occurrences s slist)
+  (-> symbol? list? nonnegative-integer?)
+  (count-from-n s slist 0)
+  )
+
+(define/contract (count-from-n s slist n)
+  (-> symbol? list? nonnegative-integer? nonnegative-integer?)
+  (cond
+    [(null? slist) n]
+    [(symbol? (car slist))
+     (if (eq? s (car slist))
+         (count-from-n s (cdr slist) (+ n 1))
+         (count-from-n s (cdr slist) n))]
+    [else (+ (count-from-n s (car slist) n)
+             (count-from-n s (cdr slist) n))]
+    ))
+
+(displayln (count-occurrences 'x '((f x) y (((x z) x)))))
+#+end_src
+
+#+RESULTS:
+: 3
+*** 1.21
+#+begin_src racket
+#lang racket
+
+(define/contract (product sos1 sos2)
+  (-> (listof symbol?) (listof symbol?) list?)
+  (if (null? sos1)
+      null
+      (append (product-symbol (car sos1) sos2)
+            (product (cdr sos1) sos2)
+            )))
+
+(define/contract (product-symbol s sos)
+  (-> symbol? (listof symbol?) list?)
+  (if (null? sos)
+      '()
+      (cons (list s (car sos))
+            (product-symbol s (cdr sos)))
+      ))
+(displayln (product-symbol 'a '(x y)))
+(displayln (product '(a b c) '(x y)))
+#+end_src
+
+#+RESULTS:
+: ((a x) (a y))
+: ((a x) (a y) (b x) (b y) (c x) (c y))
 
 * Chapter 2
 ** Specifying data via Interface
