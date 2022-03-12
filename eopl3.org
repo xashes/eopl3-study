@@ -560,6 +560,47 @@ The second argument is an abstraction of the /context/ in which we are working, 
 #+RESULTS:
 : ((a x) (a y))
 : ((a x) (a y) (b x) (b y) (c x) (c y))
+*** 1.22
+#+begin_src racket
+#lang racket
+
+(define/contract (filter-in pred lst)
+  (-> procedure? list? list?)
+  (if (null? lst)
+      null
+      (let ([fst (car lst)])
+        (if (pred fst)
+            (cons fst (filter-in pred (cdr lst)))
+            (filter-in pred (cdr lst))
+            ))))
+(displayln (filter-in number? '(a 2 (1 3) b 7)))
+#+end_src
+
+#+RESULTS:
+: (2 7)
+*** 1.23
+#+begin_src racket
+#lang racket
+
+(define/contract (list-index pred lst)
+  (-> procedure? list? (or/c natural? #f))
+  (let list-index-from ([p pred]
+                        [l lst]
+                        [n 0])
+    (if (null? l)
+        #f
+        (if (p (car l))
+            n
+            (list-index-from p (cdr l) (add1 n))
+            ))))
+
+(displayln (list-index number? '(a 2 (1 3) b 7)))
+(displayln (list-index symbol? '(1 2 (a b) 3)))
+#+end_src
+
+#+RESULTS:
+: 1
+: #f
 
 * Chapter 2
 ** Specifying data via Interface
