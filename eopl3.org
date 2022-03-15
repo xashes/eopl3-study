@@ -601,6 +601,46 @@ The second argument is an abstraction of the /context/ in which we are working, 
 #+RESULTS:
 : 1
 : #f
+*** 1.24
+#+begin_src racket
+#lang racket
+
+(define/contract (every? pred lst)
+  (-> procedure? list? boolean?)
+  (if (empty? lst)
+      #t
+      (and (pred (car lst))
+           (every? pred (cdr lst)))
+      )
+  )
+
+(displayln (every? number? '(a b c 3 e)))
+(displayln (every? number? '(1 2 3 5 4)))
+#+end_src
+
+#+RESULTS:
+: #f
+: #t
+*** 1.25
+#+begin_src racket
+#lang racket
+
+(define/contract (exists? pred lst)
+  (-> procedure? list? boolean?)
+  (if (null? lst)
+      #f
+      (or (pred (car lst))
+          (exists? pred (cdr lst)))
+      )
+  )
+
+(displayln (exists? number? '(a b c 3 e)))
+(displayln (exists? number? '(a b c d e)))
+#+end_src
+
+#+RESULTS:
+: #t
+: #f
 
 * Chapter 2
 ** Specifying data via Interface
